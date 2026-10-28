@@ -1,0 +1,65 @@
+groups:
+  - name: egov_service_alerts
+    rules:
+      # ------------------------------------------------------------------------
+      # Alert 1: Service Availability Failure (Critical)
+      # ------------------------------------------------------------------------
+      - alert: EgovServiceDown
+        expr: (up{job="egov-portal"} == 0) or (egov_service_health_status == 0)
+        for: 15s
+        labels:
+          severity: critical
+          service: egov-citizen-portal
+          team: devops-sre
+        annotations:
+          summary: "E-Governance Citizen Portal is DOWN or Failing Health Probes"
+          description: "Instance {{ $labels.instance }} has been unreachable or failing /healthz liveness checks for over 15 seconds. Citizen services are unavailable."
+          runbook_url: "https://wiki.egov.gov.in/runbooks/service-outage"
+
+      # ------------------------------------------------------------------------
+      # Alert 2: High HTTP 5xx Error Rate (High)
+      # ------------------------------------------------------------------------
+      - alert: EgovHighHttpErrorRate
+        expr: >-
+          (
+            sum(rate(egov_http_requests_total{status_code=~"5.."}[1m]))
+            /
+            sum(rate(egov_http_requests_total[1m]))
+          ) * 100 > 10
+        for: 30s
+        labels:
+          severity: high
+          service: egov-citizen-portal
+          team: devops-sre
+        annotations:
+          summary: "E-Governance Portal HTTP 5xx Error Rate > 10%"
+          description: "High error rate detected: {{ $value | printf \"%.2f\" }}% of citizen requests are failing with HTTP 500."
+          action: "Inspect application logs, database connections, and recent deployments."
+
+      # ------------------------------------------------------------------------
+      # Alert 3: Response Time Latency SLA Breach (Warning)
+      # ------------------------------------------------------------------------
+      - alert: EgovHighResponseLatency
+        expr: >-
+          histogram_quantile(0.95, sum(rate(egov_http_request_duration_seconds_bucket[1m])) by (le)) > 0.500
+        for: 30s
+        labels:
+          severity: warning
+          service: egov-citizen-portal
+          team: devops-sre
+        annotations:
+          summary: "E-Governance API 95th Percentile Response Time > 500ms SLA"
+          description: "Citizen transactions are experiencing high latency: p95 = {{ $value | printf \"%.3f\" }}s. Citizen satisfaction SLA breached."
+
+      # ------------------------------------------------------------------------
+      # Alert 4: Infrastructure High Resource Utilization (Warning)
+      # ------------------------------------------------------------------------
+      - alert: EgovHighMemoryUtilization
+        expr: (process_resident_memory_bytes{job="egov-portal"} / 1024 / 1024) > 400
+        for: 1m
+        labels:
+          severity: warning
+          service: egov-citizen-portal
+        annotations:
+          summary: "E-Governance Container Memory Usage > 400MB"
+          description: "Resident memory consumption is {{ $value | printf \"%.1f\" }}MB, nearing container limit of 512MB."

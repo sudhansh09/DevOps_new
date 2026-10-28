@@ -1,0 +1,354 @@
+{
+	"info": {
+		"_postman_id": "e85d41c2-3e28-4902-8f1d-e90f23bca01e",
+		"name": "E-Governance Citizen Portal API Automated Test Suite",
+		"description": "Comprehensive automated API regression and SLA test suite for the E-Governance portal. Executed via Newman in GitLab CI/CD pipeline.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "01 - Kubernetes Liveness Probe",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200 OK\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response time is under 150ms (SLA Check)\", function () {",
+							"    pm.expect(pm.response.responseTime).to.be.below(150);",
+							"});",
+							"",
+							"pm.test(\"Health status is HEALTHY\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.status).to.eql(\"HEALTHY\");",
+							"    pm.expect(jsonData.service).to.eql(\"egov-citizen-portal\");",
+							"    pm.expect(jsonData.dependencies.database).to.eql(\"UP\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/healthz",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"healthz"
+					]
+				}
+			}
+		},
+		{
+			"name": "02 - Kubernetes Readiness Probe",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200 OK\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Service is ready for traffic\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.ready_for_traffic).to.be.true;",
+							"    pm.expect(jsonData.status).to.eql(\"READY\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/ready",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"ready"
+					]
+				}
+			}
+		},
+		{
+			"name": "03 - Prometheus Metrics Exposition",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200 OK\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Content-Type is Prometheus exposition format\", function () {",
+							"    pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"text/plain\");",
+							"});",
+							"",
+							"pm.test(\"Contains essential E-Gov custom metrics\", function () {",
+							"    var text = pm.response.text();",
+							"    pm.expect(text).to.include(\"egov_http_requests_total\");",
+							"    pm.expect(text).to.include(\"egov_http_request_duration_seconds\");",
+							"    pm.expect(text).to.include(\"egov_service_health_status\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/metrics",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"metrics"
+					]
+				}
+			}
+		},
+		{
+			"name": "04 - List Public Governance Services",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200 OK\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Services list contains active governance services\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.be.an(\"array\");",
+							"    pm.expect(jsonData.length).to.be.at.least(3);",
+							"    var first = jsonData[0];",
+							"    pm.expect(first).to.have.property(\"service_code\");",
+							"    pm.expect(first).to.have.property(\"sla_days\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/v1/services",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"services"
+					]
+				}
+			}
+		},
+		{
+			"name": "05 - Submit Citizen Application",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 201 Created\", function () {",
+							"    pm.response.to.have.status(201);",
+							"});",
+							"",
+							"pm.test(\"Application ID and tracking code are generated\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.application_id).to.match(/^APP-/);",
+							"    pm.expect(jsonData.tracking_code).to.exist;",
+							"    pm.expect(jsonData.status).to.eql(\"SUBMITTED\");",
+							"    pm.environment.set(\"last_application_id\", jsonData.application_id);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"citizen_id\": \"NAT-ID-4491028\",\n    \"citizen_name\": \"Rajesh Varma\",\n    \"service_code\": \"CIVIL-BIRTH-CERT\",\n    \"department\": \"Department of Civil Registration\",\n    \"details\": {\n        \"child_name\": \"Aanya Varma\",\n        \"date_of_birth\": \"2026-03-15\",\n        \"hospital\": \"City General Hospital\"\n    }\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/v1/applications",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"applications"
+					]
+				}
+			}
+		},
+		{
+			"name": "06 - Query Application Tracking Status",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200 OK\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Application status record matches submission\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.citizen_name).to.eql(\"Rajesh Varma\");",
+							"    pm.expect(jsonData.status).to.eql(\"SUBMITTED\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/v1/applications/{{last_application_id}}",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"applications",
+						"{{last_application_id}}"
+					]
+				}
+			}
+		},
+		{
+			"name": "07 - Lodge Citizen Grievance",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 201 Created\", function () {",
+							"    pm.response.to.have.status(201);",
+							"});",
+							"",
+							"pm.test(\"Grievance ticket created with SLA\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.grievance_id).to.match(/^GRV-/);",
+							"    pm.expect(jsonData.status).to.eql(\"ASSIGNED\");",
+							"    pm.expect(jsonData.ward_number).to.eql(7);",
+							"    pm.expect(jsonData.sla_hours).to.be.at.most(48);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"citizen_id\": \"NAT-ID-4491028\",\n    \"citizen_name\": \"Rajesh Varma\",\n    \"ward_number\": 7,\n    \"category\": \"Sanitation and Waste Management\",\n    \"subject\": \"Pot hole on Ward 7 Main Boulevard\",\n    \"description\": \"Large pothole near municipal bus terminal causing traffic hazard.\",\n    \"priority\": \"HIGH\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/v1/grievances",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"grievances"
+					]
+				}
+			}
+		},
+		{
+			"name": "08 - Negative Test: Reject Invalid Service Code",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 400 Bad Request\", function () {",
+							"    pm.response.to.have.status(400);",
+							"});",
+							"",
+							"pm.test(\"Error message clarifies invalid code\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.detail).to.include(\"Invalid service code\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"citizen_id\": \"NAT-ID-4491028\",\n    \"citizen_name\": \"Rajesh Varma\",\n    \"service_code\": \"NON-EXISTENT-SERVICE\",\n    \"department\": \"Invalid Dept\",\n    \"details\": {}\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/v1/applications",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"applications"
+					]
+				}
+			}
+		}
+	]
+}

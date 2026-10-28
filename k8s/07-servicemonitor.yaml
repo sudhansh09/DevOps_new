@@ -1,0 +1,17 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: egov-portal-servicemonitor
+  namespace: egov-system
+  labels:
+    release: prometheus
+    app: egov-portal
+spec:
+  selector:
+    matchLabels:
+      app: egov-portal
+  endpoints:
+    - port: metrics
+      path: /metrics
+      interval: 15s
+      scrapeTimeout: 10s

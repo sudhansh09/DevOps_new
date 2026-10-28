@@ -1,0 +1,183 @@
+# ==============================================================================
+# GitLab CI/CD Pipeline: E-Governance Application
+# Automated Build, API Testing (Newman), Containerization, K8s Deployment & Monitoring
+# ==============================================================================
+
+stages:
+  - lint-and-validate
+  - unit-test
+  - docker-build-push
+  - api-test
+  - security-scan
+  - deploy-kubernetes
+  - verify-monitoring
+
+variables:
+  # GitLab Container Registry image tagging
+  CONTAINER_RELEASE_IMAGE: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
+  CONTAINER_TEST_IMAGE: $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA
+  CONTAINER_LATEST_IMAGE: $CI_REGISTRY_IMAGE:latest
+  DOCKER_DRIVER: overlay2
+  DOCKER_TLS_CERTDIR: "/certs"
+  KUBE_NAMESPACE: "egov-system"
+
+# Global Cache for Python Pip Dependencies
+cache:
+  key: "$CI_COMMIT_REF_SLUG"
+  paths:
+    - .cache/pip
+    - venv/
+
+# ------------------------------------------------------------------------------
+# Stage 1: Code Quality, Linting & Manifest Validation
+# ------------------------------------------------------------------------------
+lint:code-and-manifests:
+  stage: lint-and-validate
+  image: python:3.11-slim
+  before_script:
+    - pip install flake8 yamllint
+  script:
+    - echo "🔍 [LINT] Checking Python syntax and PEP8 compliance..."
+    - flake8 app/ --max-line-length=120 --exclude=__pycache__
+    - echo "🔍 [LINT] Validating Kubernetes and Monitoring YAML configurations..."
+    - yamllint -d "{extends: relaxed, rules: {line-length: {max: 180}}}" k8s/ monitoring/
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" || $CI_COMMIT_BRANCH == "main"'
+
+lint:dockerfile:
+  stage: lint-and-validate
+  image: hadolint/hadolint:latest-debian
+  script:
+    - echo "🔍 [LINT] Validating Dockerfile security and multi-stage practices..."
+    - hadolint Dockerfile --ignore DL3008 --ignore DL3013
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" || $CI_COMMIT_BRANCH == "main"'
+
+# ------------------------------------------------------------------------------
+# Stage 2: Automated Unit and Integration Testing
+# ------------------------------------------------------------------------------
+test:unit:
+  stage: unit-test
+  image: python:3.11-slim
+  before_script:
+    - pip install --upgrade pip
+    - pip install -r requirements.txt pytest-cov
+  script:
+    - echo "🧪 [TEST] Running Pytest unit & integration suite with code coverage..."
+    - pytest tests/ --junitxml=junit-test-report.xml --cov=app --cov-report=term-missing --cov-report=xml:coverage.xml
+  coverage: '/(?i)total.*? (100(?:\.0+)?\%|[1-9]?\d(?:\.\d+)?\%)$/'
+  artifacts:
+    when: always
+    reports:
+      junit: junit-test-report.xml
+      coverage_report:
+        coverage_format: cobertura
+        path: coverage.xml
+    expire_in: 7 days
+
+# ------------------------------------------------------------------------------
+# Stage 3: Docker Build and Container Registry Push
+# ------------------------------------------------------------------------------
+build:docker-image:
+  stage: docker-build-push
+  image: docker:24.0.5
+  services:
+    - docker:24.0.5-dind
+  before_script:
+    - echo "🔑 Logging in to GitLab Container Registry..."
+    - echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" --password-stdin "$CI_REGISTRY"
+  script:
+    - echo "🐳 [BUILD] Building multi-stage production Docker image..."
+    - docker build --pull -t "$CONTAINER_TEST_IMAGE" -t "$CONTAINER_RELEASE_IMAGE" -t "$CONTAINER_LATEST_IMAGE" .
+    - echo "📤 [PUSH] Pushing container images to GitLab Container Registry..."
+    - docker push "$CONTAINER_TEST_IMAGE"
+    - docker push "$CONTAINER_RELEASE_IMAGE"
+    - docker push "$CONTAINER_LATEST_IMAGE"
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+
+# ------------------------------------------------------------------------------
+# Stage 4: Automated API Testing with Postman & Newman
+# ------------------------------------------------------------------------------
+test:postman-newman:
+  stage: api-test
+  image:
+    name: postman/newman:alpine
+    entrypoint: [""]
+  services:
+    # Spawn application container as a network service for Newman to execute against
+    - name: $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA
+      alias: egov-portal-test
+  variables:
+    PORT: "8000"
+    HOST: "0.0.0.0"
+  script:
+    - echo "🚀 [POSTMAN] Executing automated API regression & SLA tests via Newman..."
+    - newman run postman/egov_citizen_api.postman_collection.json --env-var "base_url=http://egov-portal-test:8000" --reporters cli,junit --reporter-junit-export newman-report.xml
+  artifacts:
+    when: always
+    reports:
+      junit: newman-report.xml
+    expire_in: 7 days
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+
+# ------------------------------------------------------------------------------
+# Stage 5: Container Security Vulnerability Scanning
+# ------------------------------------------------------------------------------
+security:trivy-scan:
+  stage: security-scan
+  image:
+    name: aquasec/trivy:latest
+    entrypoint: [""]
+  script:
+    - echo "🛡️ [SECURITY] Scanning container image for vulnerabilities (CVEs)..."
+    - trivy image --no-progress --severity HIGH,CRITICAL --format table "$CONTAINER_TEST_IMAGE"
+  allow_failure: true
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+
+# ------------------------------------------------------------------------------
+# Stage 6: Kubernetes Continuous Deployment (GitOps/kubectl)
+# ------------------------------------------------------------------------------
+deploy:kubernetes-production:
+  stage: deploy-kubernetes
+  image:
+    name: bitnami/kubectl:latest
+    entrypoint: [""]
+  environment:
+    name: production
+    url: https://citizen.egov.gov.in
+  script:
+    - echo "☸️ [K8S] Configuring Kubernetes cluster context and namespace..."
+    - kubectl get namespace "$KUBE_NAMESPACE" || kubectl apply -f k8s/00-namespace.yaml
+    - echo "☸️ [K8S] Applying ConfigMaps and Secrets..."
+    - kubectl apply -f k8s/01-configmap.yaml -n "$KUBE_NAMESPACE"
+    - kubectl apply -f k8s/02-secret.yaml -n "$KUBE_NAMESPACE"
+    - echo "☸️ [K8S] Updating container image tag in Deployment manifest..."
+    - sed -i "s|registry.gitlab.com/gov-tech/egov-citizen-portal:v1.0.0|$CONTAINER_TEST_IMAGE|g" k8s/03-deployment.yaml
+    - echo "☸️ [K8S] Applying Deployment, Service, HPA, and Ingress..."
+    - kubectl apply -f k8s/03-deployment.yaml -n "$KUBE_NAMESPACE"
+    - kubectl apply -f k8s/04-service.yaml -n "$KUBE_NAMESPACE"
+    - kubectl apply -f k8s/05-hpa.yaml -n "$KUBE_NAMESPACE"
+    - kubectl apply -f k8s/06-ingress.yaml -n "$KUBE_NAMESPACE"
+    - echo "⏳ [K8S] Verifying rolling deployment rollout status..."
+    - kubectl rollout status deployment/egov-citizen-portal -n "$KUBE_NAMESPACE" --timeout=120s
+    - kubectl get pods -n "$KUBE_NAMESPACE" -l app=egov-portal -o wide
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+
+# ------------------------------------------------------------------------------
+# Stage 7: Prometheus Monitoring and Health Verification
+# ------------------------------------------------------------------------------
+verify:monitoring-and-prometheus:
+  stage: verify-monitoring
+  image: curlimages/curl:latest
+  script:
+    - echo "📊 [MONITORING] Verifying deployed pod health and Prometheus exposition endpoint..."
+    - curl -s -f http://egov-portal-service.egov-system.svc.cluster.local:8000/healthz | grep -q "HEALTHY"
+    - echo "✅ Kubernetes Liveness check verified."
+    - curl -s -f http://egov-portal-service.egov-system.svc.cluster.local:8000/metrics | grep -q "egov_http_requests_total"
+    - echo "✅ Prometheus metrics exposition verified. Target ready for Prometheus scraping."
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'

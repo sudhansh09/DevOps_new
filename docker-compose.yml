@@ -1,0 +1,106 @@
+version: '3.8'
+
+services:
+  # ----------------------------------------------------------------------------
+  # E-Governance Citizen Portal API Microservice
+  # ----------------------------------------------------------------------------
+  egov-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: egov-citizen-portal
+    ports:
+      - "8000:8000"
+    environment:
+      - SERVICE_NAME=egov-citizen-portal
+      - ENVIRONMENT=production
+      - PORT=8000
+      - HOST=0.0.0.0
+      - LOG_LEVEL=INFO
+    networks:
+      - egov-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/healthz')"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
+
+  # ----------------------------------------------------------------------------
+  # Prometheus Metric Collection & Alert Evaluation Server
+  # ----------------------------------------------------------------------------
+  prometheus:
+    image: prom/prometheus:v2.54.0
+    container_name: egov-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./monitoring/alert_rules.yml:/etc/prometheus/alert_rules.yml:ro
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+      - '--web.enable-lifecycle'
+    networks:
+      - egov-network
+    depends_on:
+      - egov-app
+    restart: unless-stopped
+
+  # ----------------------------------------------------------------------------
+  # Prometheus Alertmanager
+  # ----------------------------------------------------------------------------
+  alertmanager:
+    image: prom/alertmanager:v0.27.0
+    container_name: egov-alertmanager
+    ports:
+      - "9093:9093"
+    volumes:
+      - ./monitoring/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
+    command:
+      - '--config.file=/etc/alertmanager/alertmanager.yml'
+      - '--storage.path=/alertmanager'
+    networks:
+      - egov-network
+    restart: unless-stopped
+
+  # ----------------------------------------------------------------------------
+  # Grafana Dashboards & Visualizations
+  # ----------------------------------------------------------------------------
+  grafana:
+    image: grafana/grafana:11.1.0
+    container_name: egov-grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+    volumes:
+      - ./monitoring/grafana/provisioning/datasources:/etc/grafana/provisioning/datasources:ro
+      - ./monitoring/grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards:ro
+      - ./monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards/json:ro
+    networks:
+      - egov-network
+    depends_on:
+      - prometheus
+    restart: unless-stopped
+
+  # ----------------------------------------------------------------------------
+  # Node Exporter (Host & System Infrastructure Metrics)
+  # ----------------------------------------------------------------------------
+  node-exporter:
+    image: prom/node-exporter:v1.8.2
+    container_name: egov-node-exporter
+    ports:
+      - "9100:9100"
+    networks:
+      - egov-network
+    restart: unless-stopped
+
+networks:
+  egov-network:
+    driver: bridge

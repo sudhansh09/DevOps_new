@@ -1,0 +1,40 @@
+global:
+  resolve_timeout: 1m
+
+route:
+  group_by: ['alertname', 'service', 'severity']
+  group_wait: 5s
+  group_interval: 10s
+  repeat_interval: 30m
+  receiver: 'devops-sre-team'
+  routes:
+    - match:
+        severity: critical
+      receiver: 'pager-duty-critical'
+      continue: true
+    - match:
+        severity: high
+      receiver: 'devops-slack-webhook'
+
+receivers:
+  - name: 'devops-sre-team'
+    webhook_configs:
+      - url: 'http://localhost:5001/api/v1/alerts/webhook'
+        send_resolved: true
+
+  - name: 'pager-duty-critical'
+    webhook_configs:
+      - url: 'http://localhost:5001/api/v1/alerts/pagerduty'
+        send_resolved: true
+
+  - name: 'devops-slack-webhook'
+    webhook_configs:
+      - url: 'http://localhost:5001/api/v1/alerts/slack'
+        send_resolved: true
+
+inhibit_rules:
+  - source_match:
+      alertname: 'EgovServiceDown'
+    target_match:
+      alertname: 'EgovHighHttpErrorRate'
+    equal: ['service']

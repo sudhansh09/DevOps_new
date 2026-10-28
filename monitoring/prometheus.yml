@@ -1,0 +1,41 @@
+global:
+  scrape_interval: 5s
+  evaluation_interval: 5s
+  external_labels:
+    monitor: 'egov-production-monitor'
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+            - 'alertmanager:9093'
+
+rule_files:
+  - 'alert_rules.yml'
+
+scrape_configs:
+  # Scrape E-Governance Citizen Portal Application Metrics
+  - job_name: 'egov-portal'
+    scrape_interval: 5s
+    scrape_timeout: 4s
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['egov-app:8000', 'host.docker.internal:8000', '127.0.0.1:8000']
+        labels:
+          environment: 'production'
+          service: 'egov-citizen-portal'
+          region: 'gov-central'
+
+  # Scrape Host and Infrastructure Node Metrics
+  - job_name: 'node-exporter'
+    scrape_interval: 10s
+    static_configs:
+      - targets: ['node-exporter:9100']
+        labels:
+          tier: 'infrastructure'
+
+  # Self-monitoring Prometheus
+  - job_name: 'prometheus'
+    scrape_interval: 10s
+    static_configs:
+      - targets: ['localhost:9090']
