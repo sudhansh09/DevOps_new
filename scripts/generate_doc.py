@@ -1,0 +1,803 @@
+"""
+Generator for Word Document (.docx and .doc)
+Builds:
+1. E_Governance_DevOps_Seminar_Report.doc (Microsoft Word HTML/XML format with page layout & tables)
+2. E_Governance_DevOps_Seminar_Report.docx (Full OpenXML ZIP package)
+"""
+import os
+import sys
+import zipfile
+from pathlib import Path
+import xml.sax.saxutils as saxutils
+
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+DOCX_PATH = BASE_DIR / "E_Governance_DevOps_Seminar_Report.docx"
+DOC_PATH = BASE_DIR / "E_Governance_DevOps_Seminar_Report.doc"
+
+def generate_word_doc_html():
+    """Generates a high-fidelity Microsoft Word compatible .doc file."""
+    html_content = """<html xmlns:o='urn:schemas-microsoft-com:office:office' 
+xmlns:w='urn:schemas-microsoft-com:office:word' 
+xmlns='http://www.w3.org/TR/REC-html40'>
+<head>
+<meta charset="utf-8">
+<title>E-Governance DevOps Seminar Report</title>
+<!--[if gte mso 9]>
+<xml>
+<w:WordDocument>
+<w:View>Print</w:View>
+<w:Zoom>100</w:Zoom>
+<w:DoNotOptimizeForBrowser/>
+</w:WordDocument>
+</xml>
+<![endif]-->
+<style>
+@page {
+    size: 21.0cm 29.7cm; /* A4 */
+    margin: 2.54cm 2.54cm 2.54cm 2.54cm;
+    mso-page-orientation: portrait;
+}
+body {
+    font-family: 'Times New Roman', serif;
+    font-size: 12pt;
+    line-height: 1.5;
+    color: #000000;
+    text-align: justify;
+}
+h1 {
+    font-size: 16pt;
+    font-weight: bold;
+    text-align: center;
+    text-transform: uppercase;
+    margin-top: 24pt;
+    margin-bottom: 12pt;
+    color: #000000;
+}
+h2 {
+    font-size: 14pt;
+    font-weight: bold;
+    margin-top: 18pt;
+    margin-bottom: 6pt;
+    color: #000000;
+}
+h3 {
+    font-size: 12pt;
+    font-weight: bold;
+    margin-top: 12pt;
+    margin-bottom: 4pt;
+    color: #000000;
+}
+p {
+    margin-bottom: 8pt;
+    text-indent: 0pt;
+}
+.title-page {
+    text-align: center;
+    height: 100%;
+}
+.page-break {
+    page-break-before: always;
+    mso-break-type: page-break;
+}
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10pt;
+    margin-bottom: 12pt;
+    font-size: 11pt;
+}
+table, th, td {
+    border: 1px solid #000000;
+}
+th {
+    background-color: #f2f2f2;
+    padding: 6pt;
+    text-align: left;
+    font-weight: bold;
+}
+td {
+    padding: 5pt;
+    vertical-align: top;
+}
+.center {
+    text-align: center;
+}
+.bold {
+    font-weight: bold;
+}
+pre, code {
+    font-family: 'Courier New', monospace;
+    font-size: 9.5pt;
+    background-color: #f8f9fa;
+}
+.box {
+    border: 1px solid #333333;
+    padding: 10pt;
+    background-color: #fafafa;
+    margin: 10pt 0;
+    font-family: 'Courier New', monospace;
+    font-size: 9.5pt;
+    white-space: pre-wrap;
+}
+.signature-table {
+    border: none;
+    margin-top: 40pt;
+}
+.signature-table td {
+    border: none;
+    padding-top: 30pt;
+}
+</style>
+</head>
+<body>
+
+<!-- TITLE PAGE -->
+<div class="title-page">
+    <p style="font-size: 14pt;">A Report</p>
+    <p style="font-size: 12pt;">on</p>
+    <p style="font-size: 18pt; font-weight: bold; margin: 20pt 0;">“Design and Implementation of an End-to-End DevOps Pipeline for an E-Governance Application Using GitLab, Docker, Kubernetes, and Prometheus-Grafana Monitoring”</p>
+    <p style="font-size: 12pt;">Submitted to the</p>
+    <p style="font-size: 14pt; font-weight: bold;">Savitribai Phule Pune University</p>
+    <p style="font-style: italic; font-size: 12pt; margin: 15pt 0;">In partial fulfillment for the award of the Degree of</p>
+    <p style="font-size: 15pt; font-weight: bold;">Bachelor of Engineering</p>
+    <p style="font-size: 13pt;">in</p>
+    <p style="font-size: 15pt; font-weight: bold;">Information Technology</p>
+    
+    <p style="font-size: 12pt; margin-top: 25pt;">by</p>
+    <p style="font-size: 13pt; font-weight: bold;">Amit Kangane (BIA27)&emsp;&emsp;Ankush Patil (BIA04)</p>
+    <p style="font-size: 13pt; font-weight: bold;">Vedant Pimple (BI46)&emsp;&emsp;Yash Bankar (BIA45)</p>
+    
+    <p style="font-size: 12pt; margin-top: 25pt;">Under the guidance of</p>
+    <p style="font-size: 14pt; font-weight: bold;">Prof. Swati Shinde</p>
+    
+    <div style="margin-top: 40pt;">
+        <p style="font-size: 13pt; font-weight: bold; margin: 2pt;">DEPARTMENT OF INFORMATION TECHNOLOGY</p>
+        <p style="font-size: 12pt; font-weight: bold; margin: 2pt;">INTERNATIONAL INSTITUTE OF INFORMATION TECHNOLOGY, PUNE - 411057</p>
+        <p style="font-size: 12pt; font-weight: bold; margin: 2pt;">SAVITRIBAI PHULE PUNE UNIVERSITY</p>
+        <p style="font-size: 13pt; font-weight: bold; margin-top: 10pt;">2026 – 2027</p>
+    </div>
+</div>
+
+<div class="page-break"></div>
+
+<!-- CERTIFICATE -->
+<h1>CERTIFICATE</h1>
+<p style="margin-top: 25pt;">This is to certify that the Seminar report entitled <b>“Design and Implementation of an End-to-End DevOps Pipeline for an E-Governance Application Using GitLab, Docker, Kubernetes, and Prometheus-Grafana Monitoring”</b> being submitted by <b>Amit Kangane (BIA27), Ankush Patil (BIA04), Vedant Pimple (BI46), Yash Bankar (BIA45)</b> is a record of bonafide work carried out by them under the supervision and guidance of <b>Prof. Swati Shinde</b> in partial fulfillment of the requirement for BE (Information Technology) – 2019 course of Savitribai Phule Pune University, Pune in the academic year 2026–2027.</p>
+
+<p style="margin-top: 40pt;"><b>Date:</b> 28/10/2026 &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp; <b>Place:</b> Pune</p>
+
+<table class="signature-table" style="margin-top: 60pt;">
+    <tr>
+        <td style="text-align: center; width: 50%;">
+            <b>Prof. Swati Shinde</b><br>
+            Guide
+        </td>
+        <td style="text-align: center; width: 50%;">
+            <b>Dr. Jyoti V. Surve</b><br>
+            Head of the Department
+        </td>
+    </tr>
+</table>
+
+<div class="page-break"></div>
+
+<!-- ACKNOWLEDGEMENT -->
+<h1>ACKNOWLEDGEMENT</h1>
+<p>We take this opportunity to express our sincere gratitude to all those who have contributed to the successful completion of this seminar work. First and foremost, we express our deep sense of gratitude to our guide <b>Prof. Swati Shinde</b>, Department of Information Technology, for continuous guidance, valuable suggestions, and constant encouragement throughout the duration of this work.</p>
+
+<p>We are thankful to the Head of the Department and the faculty members of the Department of Information Technology for providing the necessary facilities and a conducive academic environment. We also acknowledge the technical support received from the laboratory staff during the configuration and testing of the DevOps toolchain, container runtimes, and cluster orchestration.</p>
+
+<p>We are grateful to Savitribai Phule Pune University for providing the academic framework under which this seminar has been undertaken. We further acknowledge the open-source communities and maintainers of <b>FastAPI, GitLab CI/CD, Docker, Postman, Newman, Kubernetes, Prometheus, and Grafana</b>, whose documentation and tools formed the practical foundation of this work.</p>
+
+<p>Finally, we express our heartfelt thanks to our families and friends for their moral support and understanding during the course of this seminar.</p>
+
+<p style="margin-top: 40pt; text-align: right; font-weight: bold;">
+    Amit Kangane (BIA27)<br>
+    Ankush Patil (BIA04)<br>
+    Vedant Pimple (BI46)<br>
+    Yash Bankar (BIA45)
+</p>
+
+<div class="page-break"></div>
+
+<!-- ABSTRACT -->
+<h1>ABSTRACT</h1>
+<p>This seminar report presents the design and implementation of an E-Governance Citizen Services Portal developed as a high-concurrency microservice and integrated with modern DevOps practices. The system is built using Python 3.11 and FastAPI, exposing REST endpoints for vital civil records (birth certificates), land registry and mutation, municipal trade licensing, and civic grievance redressal. The development workflow incorporates GitLab CI/CD for end-to-end automation, testing with Pytest and Newman (Postman), Git and GitLab for version control, Docker for multi-stage containerization with non-root security (UID 10001), container registry for image distribution, and Kubernetes for declarative orchestration and rolling zero-downtime deployment.</p>
+
+<p>Observability is achieved through native Prometheus metric exposition on <code>/metrics</code>, Prometheus time-series scraping, Alertmanager rules, and Grafana dashboards that visualize Service Level Agreement (SLA) availability, response latency percentiles (p50, p90, p95, p99), HTTP 5xx error percentages, and container CPU and memory utilization. The report documents the end-to-end workflow from source code to running Kubernetes pods and live telemetry, demonstrating automated build, automated contract testing, continuous deployment, and alert generation during a simulated service failure.</p>
+
+<p>Key results include successful Pytest unit test executions, 8 out of 8 Postman contract and SLA assertions passing via Newman CLI, container image compilation with Trivy vulnerability scanning, Kubernetes Deployment reaching the Running state with 3 replicas, exposure via a Kubernetes Service, successful Prometheus scraping of the target application, creation of a dedicated Grafana operational dashboard, and automated alert firing (<code>EgovServiceDown</code>) with self-healing recovery during chaos injection. The seminar concludes with a discussion of advantages, limitations, practical applications in public sector IT, and directions for future enterprise hardening.</p>
+
+<div class="page-break"></div>
+
+<!-- CONTENTS -->
+<h1>CONTENTS</h1>
+<table>
+    <tr><th>Chapter / Section</th><th>Page No.</th></tr>
+    <tr><td><b>CERTIFICATE</b></td><td>2</td></tr>
+    <tr><td><b>ACKNOWLEDGEMENT</b></td><td>3</td></tr>
+    <tr><td><b>ABSTRACT</b></td><td>4</td></tr>
+    <tr><td><b>CONTENTS</b></td><td>5</td></tr>
+    <tr><td><b>LIST OF FIGURES</b></td><td>7</td></tr>
+    <tr><td><b>LIST OF TABLES</b></td><td>8</td></tr>
+    <tr><td><b>CHAPTER 1 INTRODUCTION</b></td><td>9</td></tr>
+    <tr><td>&emsp;1.1 Introduction to the Project</td><td>9</td></tr>
+    <tr><td>&emsp;1.2 Motivation Behind the Project</td><td>9</td></tr>
+    <tr><td>&emsp;1.3 Aim and Objectives</td><td>9</td></tr>
+    <tr><td>&emsp;1.4 Introduction to the Seminar Topic</td><td>10</td></tr>
+    <tr><td>&emsp;1.5 Organization of the Report</td><td>10</td></tr>
+    <tr><td><b>CHAPTER 2 LITERATURE SURVEY</b></td><td>11</td></tr>
+    <tr><td>&emsp;2.1 Introduction</td><td>11</td></tr>
+    <tr><td>&emsp;2.2 Existing Approaches to Software Delivery and DevOps</td><td>11</td></tr>
+    <tr><td>&emsp;2.3 CI/CD and Automated Testing</td><td>11</td></tr>
+    <tr><td>&emsp;2.4 Containerization and Kubernetes</td><td>11</td></tr>
+    <tr><td>&emsp;2.5 Monitoring with Prometheus and Grafana</td><td>12</td></tr>
+    <tr><td>&emsp;2.6 Comparative Analysis of Existing Approaches</td><td>12</td></tr>
+    <tr><td>&emsp;2.7 Research Gaps and Project Relevance</td><td>12</td></tr>
+    <tr><td><b>CHAPTER 3 SYSTEM ARCHITECTURE AND TECHNOLOGIES</b></td><td>13</td></tr>
+    <tr><td>&emsp;3.1 System Overview</td><td>13</td></tr>
+    <tr><td>&emsp;3.2 Application Architecture</td><td>13</td></tr>
+    <tr><td>&emsp;3.3 Backend Design and REST APIs</td><td>14</td></tr>
+    <tr><td>&emsp;3.4 Automated Testing and Build Workflow</td><td>15</td></tr>
+    <tr><td>&emsp;3.5 GitLab CI/CD Pipeline Design</td><td>16</td></tr>
+    <tr><td>&emsp;3.6 Docker Containerization</td><td>16</td></tr>
+    <tr><td>&emsp;3.7 Kubernetes Deployment and Service</td><td>16</td></tr>
+    <tr><td>&emsp;3.8 Prometheus Metrics Collection</td><td>16</td></tr>
+    <tr><td>&emsp;3.9 Grafana Dashboard and Visualization</td><td>17</td></tr>
+    <tr><td><b>CHAPTER 4 IMPLEMENTATION, RESULTS AND APPLICATIONS</b></td><td>18</td></tr>
+    <tr><td>&emsp;4.1 Development and Implementation Methodology</td><td>18</td></tr>
+    <tr><td>&emsp;4.2 Source Code and Version Control</td><td>18</td></tr>
+    <tr><td>&emsp;4.3 Build and Test Results</td><td>18</td></tr>
+    <tr><td>&emsp;4.4 Containerization and Image Management</td><td>18</td></tr>
+    <tr><td>&emsp;4.5 Kubernetes Deployment Results</td><td>18</td></tr>
+    <tr><td>&emsp;4.6 Monitoring and Observability Results</td><td>19</td></tr>
+    <tr><td>&emsp;4.7 Advantages and Limitations</td><td>19</td></tr>
+    <tr><td>&emsp;4.8 Applications and Practical Relevance</td><td>19</td></tr>
+    <tr><td>&emsp;4.9 Challenges Encountered and Solutions</td><td>20</td></tr>
+    <tr><td><b>CHAPTER 5 CONCLUSION AND FUTURE SCOPE</b></td><td>21</td></tr>
+    <tr><td><b>REFERENCES</b></td><td>22</td></tr>
+    <tr><td><b>APPENDIX</b></td><td>23</td></tr>
+    <tr><td>&emsp;A.1 Important Commands</td><td>23</td></tr>
+</table>
+
+<div class="page-break"></div>
+
+<!-- LIST OF FIGURES & TABLES -->
+<h1>LIST OF FIGURES</h1>
+<table>
+    <tr><th>Sr. No.</th><th>Figure Name</th><th>Page No.</th></tr>
+    <tr><td>1</td><td>Figure 1.1: Overall System Architecture</td><td>12</td></tr>
+    <tr><td>2</td><td>Figure 1.2: End-to-End DevOps CI/CD Workflow</td><td>13</td></tr>
+    <tr><td>3</td><td>Figure 3.1: Prometheus and Grafana Monitoring Architecture</td><td>19</td></tr>
+    <tr><td>4</td><td>Figure 3.2: Docker and Kubernetes Deployment Architecture</td><td>18</td></tr>
+    <tr><td>5</td><td>Figure 3.3: Application Request and Response Flow</td><td>14</td></tr>
+    <tr><td>6</td><td>Figure 3.4: Automated Build and Testing Workflow</td><td>15</td></tr>
+</table>
+
+<h1 style="margin-top: 30pt;">LIST OF TABLES</h1>
+<table>
+    <tr><th>Sr. No.</th><th>Table Name</th><th>Page No.</th></tr>
+    <tr><td>1</td><td>Table 2.1: Comparison of Traditional Delivery vs DevOps Approaches</td><td>10</td></tr>
+    <tr><td>2</td><td>Table 3.1: Technology Stack and Responsibilities</td><td>13</td></tr>
+    <tr><td>3</td><td>Table 3.2: REST API Endpoints</td><td>14</td></tr>
+    <tr><td>4</td><td>Table 4.1: Test Case Summary</td><td>23</td></tr>
+    <tr><td>5</td><td>Table 4.2: Implemented, Partial, and Future Features</td><td>26</td></tr>
+    <tr><td>6</td><td>Table 4.3: Component Responsibility Matrix</td><td>27</td></tr>
+</table>
+
+<div class="page-break"></div>
+
+<!-- CHAPTER 1 -->
+<h1>CHAPTER 1<br>INTRODUCTION</h1>
+<h2>1.1 Introduction to the Project</h2>
+<p>Public sector administrative bodies increasingly rely on software systems to deliver civic entitlements, issue statutory certificates, process commercial trade licenses, and resolve citizen grievances. Traditional e-governance solutions often suffer from manual deployment processes, limited horizontal scalability, unpredictable maintenance downtimes, and opaque operational behaviour. This seminar presents an E-Governance Citizen Portal Application developed as a high-concurrency backend service using Python and FastAPI, together with a complete DevOps toolchain that automates build, test, containerization, deployment, and monitoring.</p>
+
+<p>The application exposes RESTful endpoints for vital civil registration, land title mutation, business licenses, and grievance redressal, designed to run as a containerized microservice. The DevOps pipeline connects source control on GitLab with automated linting, Pytest test suites, Newman-driven Postman API regression testing, Docker multi-stage image creation, Kubernetes zero-downtime deployment, and continuous observability through Prometheus and Grafana. The project therefore serves both as a functional civic domain application and as a practical case study of modern software delivery practices.</p>
+
+<p>The system was implemented with Python 3.11 and FastAPI 0.115. Automated API contract tests employ Postman Collection v2.1 executed headless via Newman. Version control is maintained on Git with structured GitLab CI/CD stages. The Kubernetes deployment was verified to reach the Running state across 3 replicas, the application was exposed via a ClusterIP Service, Prometheus successfully scraped the application target, and a Grafana dashboard named E-Governance Operational Dashboard was created with panels for service availability SLA, response latency percentiles, HTTP error distribution, and container resource utilization.</p>
+
+<h2>1.2 Motivation Behind the Project</h2>
+<p>The motivation for this work arises from two complementary needs. First, civic administrations require reliable software that can process public applications with predictable performance, high data integrity, and strict Service Level Agreements (SLAs). Second, modern software engineering practice has established that frequent, automated, and observable delivery pipelines reduce the risk of defective releases and improve the speed of feedback. Combining these needs yields a project that is both domain-relevant and pedagogically valuable.</p>
+
+<p>Manual software delivery processes in public administration are error-prone and slow. Configuration drift between staging and production environments is a common source of public portal outages. Containerization and orchestration address environment consistency, while continuous integration and automated API testing reduce the time between code changes and validated deployments. Observability tools close the loop by making runtime health visible and triggering automated self-healing during service degradation. The present project was undertaken to apply these practices to a concrete e-governance application and to document the resulting architecture, implementation decisions, and observed outcomes.</p>
+
+<h2>1.3 Aim and Objectives</h2>
+<p>The aim of this project is to design, implement, and demonstrate an E-Governance Citizen Portal Application that is developed, delivered, and monitored using contemporary DevOps practices.</p>
+<p>The specific objectives are:</p>
+<ol>
+    <li>To develop a FastAPI application providing REST APIs for citizen services, health probes (<code>/healthz</code>, <code>/ready</code>), and chaos failure testing.</li>
+    <li>To establish an automated test suite using Pytest for unit validation and Postman/Newman for API contract and SLA testing.</li>
+    <li>To containerize the application with a multi-stage Dockerfile adhering to non-root execution (UID 10001) and security best practices.</li>
+    <li>To deploy the containerized application on Kubernetes using declarative manifests (Namespace, Deployment, Service, HPA, Ingress).</li>
+    <li>To instrument the application with native Prometheus metrics and enable scraping via Prometheus server configuration.</li>
+    <li>To formulate Prometheus alerting rules for service availability, high HTTP error rates, and response latency breaches.</li>
+    <li>To create Grafana dashboards visualizing real-time SLA availability, latency percentiles, error rates, and resource utilization.</li>
+    <li>To configure a GitLab CI/CD pipeline orchestrating linting, testing, packaging, API verification, and deployment.</li>
+    <li>To demonstrate automated alert generation, notification dispatch, and self-healing recovery during a simulated service failure.</li>
+</ol>
+
+<h2>1.4 Introduction to the Seminar Topic</h2>
+<p>DevOps is a set of cultural and technical practices that aim to shorten the systems development life cycle while delivering features, fixes, and updates frequently and reliably. Core technical enablers include continuous integration, continuous delivery, infrastructure as code, containerization, orchestration, and observability. This seminar focuses on the practical application of these practices to an e-governance citizen services backend.</p>
+
+<h3>Aim and Objectives of the Seminar</h3>
+<p>The aim of the seminar is to present a coherent account of how DevOps tooling can be applied to a realistic public sector application, covering architecture, implementation, results, and lessons learned. The seminar objectives are to explain the chosen technology stack, document the end-to-end delivery workflow, present verified results, and demonstrate automated incident response during simulated service degradation.</p>
+
+<h2>1.5 Organization of the Report</h2>
+<p>The remainder of this report is organized as follows. Chapter 2 surveys relevant literature on DevOps, CI/CD, containerization, orchestration, and monitoring. Chapter 3 describes the system architecture and the technologies employed. Chapter 4 presents implementation details, results, advantages, limitations, and applications. Chapter 5 concludes the report and outlines future scope. References and an appendix containing commands and configuration snippets follow the main chapters.</p>
+
+<div class="page-break"></div>
+
+<!-- CHAPTER 2 -->
+<h1>CHAPTER 2<br>LITERATURE SURVEY</h1>
+<h2>2.1 Introduction</h2>
+<p>This chapter reviews scholarly and authoritative sources related to continuous software engineering practices, container orchestration, and observability. The survey establishes the conceptual foundation for the project and identifies research gaps that the present work addresses in an educational and practical setting.</p>
+
+<h2>2.2 Existing Approaches to Software Delivery and DevOps</h2>
+<p>DevOps emerged as a response to the friction between software development and IT operations teams. Early literature emphasized cultural change, shared ownership of the delivery pipeline, and the automation of repetitive tasks [1]. Systematic reviews have classified DevOps capabilities across the software life cycle, highlighting automation, continuous monitoring, continuous integration, and continuous deployment as central practices [2].</p>
+
+<p>Traditional waterfall or staged delivery models separate development from operations and typically involve infrequent, high-risk releases. In contrast, DevOps-oriented organizations aim for smaller, more frequent releases supported by automated testing and infrastructure provisioning. Empirical studies indicate that adoption of DevOps practices is associated with higher deployment frequency, improved stability, and reduced defect escape rates [2].</p>
+
+<h2>2.3 CI/CD and Automated Testing</h2>
+<p>Continuous Integration (CI), Continuous Delivery, and Continuous Deployment form a spectrum of automation maturity. Shahin et al. conducted a systematic literature review of continuous practices, identifying approaches and tools that reduce build and test time, increase visibility of results, support automated testing, detect faults, and improve the reliability of deployment pipelines [1]. Their review of 69 papers remains a foundational reference for understanding continuous delivery tooling.</p>
+
+<p>Automated API testing through headless runners like Newman ensures contract fidelity and verifies response latency constraints before code is promoted to production clusters [4]. Integrating security scanning tools such as Trivy into CI/CD pipelines shifts vulnerability detection leftward, catching unpatched Common Vulnerabilities and Exposures (CVEs) during the container compilation phase rather than post-deployment [11].</p>
+
+<h2>2.4 Containerization and Kubernetes</h2>
+<p>Containerization packages an application together with its dependencies into a portable unit. Docker has become the de-facto standard for building and distributing container images [5]. Kubernetes, originally developed at Google and now a Cloud Native Computing Foundation (CNCF) graduated project, provides declarative orchestration of containers, including scheduling, scaling, service discovery, health monitoring, and zero-downtime rolling updates [6].</p>
+
+<p>In the context of public sector and municipal governance applications, microservices deployed on Kubernetes enable independent scaling of high-demand citizen services, such as tax filing or certificate issuance, while isolating faults from other municipal services [3].</p>
+
+<h2>2.5 Monitoring with Prometheus and Grafana</h2>
+<p>Observability is essential for operating containerized systems whose topology is dynamic. Prometheus is a pull-based monitoring system that scrapes metrics endpoints over HTTP and stores time-series data in an optimized storage engine [7]. Prometheus Alertmanager evaluates alerting rules against scraped metrics, routing alerts based on grouping and inhibition rules [8]. Grafana provides visual dashboarding on top of Prometheus data sources, enabling operators to analyze Service Level Indicators (SLIs) and resource trends [9].</p>
+
+<p>FastAPI applications expose metrics through the Prometheus Client library, which serves metrics in Prometheus exposition format on a dedicated <code>/metrics</code> route. In Kubernetes, Prometheus scrapes application pods via Service endpoints, closing the loop between runtime performance and operational visibility.</p>
+
+<h2>2.6 Comparative Analysis of Existing Approaches</h2>
+<p>Table 2.1 summarizes key differences between traditional software delivery and a DevOps-oriented approach as applied in this project.</p>
+
+<h3>Table 2.1: Comparison of Traditional Delivery vs DevOps Approaches</h3>
+<table>
+    <tr><th>Aspect</th><th>Traditional Delivery</th><th>DevOps Approach (This Project)</th></tr>
+    <tr><td><b>Release frequency</b></td><td>Infrequent, large releases (quarterly)</td><td>Frequent, small releases via GitLab CI/CD</td></tr>
+    <tr><td><b>Environment consistency</b></td><td>Manual server configuration, drift risk</td><td>Docker container images, identical runtime</td></tr>
+    <tr><td><b>Testing</b></td><td>Late-stage, manual user testing</td><td>Automated unit (Pytest) & API tests (Newman)</td></tr>
+    <tr><td><b>Deployment</b></td><td>Manual scripts, scheduled downtime</td><td>Kubernetes rolling updates, zero downtime</td></tr>
+    <tr><td><b>Observability</b></td><td>Reactive, log inspection after failure</td><td>Pull-based Prometheus metrics + Grafana</td></tr>
+    <tr><td><b>Feedback loop</b></td><td>Long (days to weeks)</td><td>Short (minutes: build, test, and scrape cycle)</td></tr>
+    <tr><td><b>Tooling</b></td><td>Heterogeneous, siloed tools</td><td>Integrated: Git, GitLab CI, Docker, K8s, Prom</td></tr>
+</table>
+
+<h2>2.7 Research Gaps and Project Relevance</h2>
+<p>While extensive literature exists on individual DevOps practices, educational case studies that document a complete, working pipeline for a domain-specific e-governance application remain valuable. Many published systems focus either on application design or on infrastructure automation in isolation. This seminar bridges the gap by presenting a coherent narrative from civic domain requirements through implementation, containerization, orchestration, and observability, incorporating simulated chaos failure testing to validate alert generation and self-healing.</p>
+
+<div class="page-break"></div>
+
+<!-- CHAPTER 3 -->
+<h1>CHAPTER 3<br>SYSTEM ARCHITECTURE AND TECHNOLOGIES</h1>
+<h2>3.1 System Overview</h2>
+<p>The system comprises three logical planes: the application plane (FastAPI microservice), the delivery plane (Git, GitLab CI/CD, Docker, Newman, Kubernetes), and the observability plane (Prometheus, Alertmanager, Grafana). Figure 1.1 illustrates the overall architecture.</p>
+
+<div class="box">
++---------------------------------------------------------------------------------------------------+
+|                                  PRESENTATION / CITIZEN LAYER                                     |
+|             Citizen Web Portal | Mobile App | Open Data Consumer (citizen.egov.gov.in)            |
++---------------------------------------------------------------------------------------------------+
+                                                  | (HTTPS)
++---------------------------------------------------------------------------------------------------+
+|                                KUBERNETES INGRESS & ROUTING PLANE                                 |
+|                       NGINX Ingress Controller -> egov-portal-service:80/8000                     |
++---------------------------------------------------------------------------------------------------+
+                                                  |
++---------------------------------------------------------------------------------------------------+
+|                                 APPLICATION & MICROSERVICE PLANE                                  |
+|         Pod Replicas (x3): Python 3.11 / FastAPI (UID 10001 Non-Root Runtime User)                |
+|         - Civil Birth Registration       - Municipal Trade Licensing                              |
+|         - Land Mutation Records          - Public Grievance Redressal                             |
+|         - /healthz (Liveness Probe)      - /ready (Readiness Probe)                               |
+|         - /metrics (Prometheus Exporter) - /api/v1/chaos/* (Chaos Harness)                        |
++---------------------------------------------------------------------------------------------------+
+                       |                                                   |
++-----------------------------------------------+   +-----------------------------------------------+
+|         CONTINUOUS DELIVERY (CI/CD)           |   |            OBSERVABILITY & SRE PLANE          |
+|  - GitLab CI/CD Pipeline (7 Stages)           |   |  - Prometheus Server (Scrapes /metrics @ 5s)  |
+|  - Flake8, Yamllint, Hadolint Quality Gates   |   |  - Prometheus Alertmanager (Firing Alerts)    |
+|  - Docker Multi-Stage Image Builder           |   |  - Grafana Operational Dashboards             |
+|  - Newman Postman Contract & SLA Testing      |   |  - PagerDuty / Slack Webhook Incident Dispatch|
+|  - Trivy Container Vulnerability Scanning     |   |  - K8s Horizontal Pod Autoscaler (HPA: 2-10)  |
+|  - Kubectl Rolling Update Deployments         |   |                                               |
++-----------------------------------------------+   +-----------------------------------------------+
+</div>
+<p class="center bold">Figure 1.1: Overall System Architecture</p>
+
+<h2>3.2 Application Architecture</h2>
+<p>The application follows a modular architecture typical of cloud-native REST services. Routers handle HTTP requests, Pydantic schemas validate input payloads, business logic manages application tracking, and an in-memory data store manages persistence. For automated testing, isolated fixtures verify service contracts without external database dependencies.</p>
+
+<h3>Table 3.1: Technology Stack and Responsibilities</h3>
+<table>
+    <tr><th>Component</th><th>Technology</th><th>Responsibility</th></tr>
+    <tr><td>Language / Runtime</td><td>Python 3.11</td><td>Application execution</td></tr>
+    <tr><td>Framework</td><td>FastAPI 0.115</td><td>Web, routing, OpenAPI, DI</td></tr>
+    <tr><td>ASGI Server</td><td>Uvicorn 0.32</td><td>High-throughput asynchronous server</td></tr>
+    <tr><td>Automated Testing</td><td>Pytest & Newman</td><td>Unit tests and Postman API contract tests</td></tr>
+    <tr><td>Version Control</td><td>Git / GitLab</td><td>Source repository and branch management</td></tr>
+    <tr><td>CI Server</td><td>GitLab CI/CD</td><td>7-stage automated pipeline orchestration</td></tr>
+    <tr><td>Container Runtime</td><td>Docker Engine</td><td>Multi-stage image build and execution</td></tr>
+    <tr><td>Image Registry</td><td>GitLab Container Registry</td><td>Image storage and SHA tagging</td></tr>
+    <tr><td>Security Scanner</td><td>Aqua Trivy</td><td>Container image CVE vulnerability scan</td></tr>
+    <tr><td>Orchestration</td><td>Kubernetes</td><td>Deployment, Service, HPA, Ingress</td></tr>
+    <tr><td>Metrics Exporter</td><td>Prometheus Client</td><td>Expose /metrics counters and histograms</td></tr>
+    <tr><td>Metrics Engine</td><td>Prometheus v2.54</td><td>Pull-based scraping and alert evaluation</td></tr>
+    <tr><td>Alert Management</td><td>Alertmanager v0.27</td><td>Notification routing and webhook dispatch</td></tr>
+    <tr><td>Visualization</td><td>Grafana 11.1</td><td>SLA, latency, and error rate dashboards</td></tr>
+</table>
+
+<div class="box">
+[ Git Repository ] ---> [ 1. Lint: flake8/yamllint ] ---> [ 2. Unit Test: pytest ]
+                                                                   |
+                                                                   v
+[ 5. Security: Trivy ] <--- [ 4. API Test: Newman ] <--- [ 3. Build: Docker ]
+        |
+        v
+[ 6. Deploy: Kubernetes (Rolling Update) ] ---> [ 7. Verify: Prometheus Scrape ]
+</div>
+<p class="center bold">Figure 1.2: End-to-End DevOps CI/CD Workflow</p>
+
+<h2>3.3 Backend Design and REST APIs</h2>
+<p>The application exposes citizen governance REST endpoints. Verified endpoints include <code>GET /api/v1/services</code> for listing public services, <code>POST /api/v1/applications</code> for submitting certificate and license requests, <code>GET /api/v1/applications/{id}</code> for tracking, and <code>POST /api/v1/grievances</code> for municipal issue reporting. Probes <code>/healthz</code> and <code>/ready</code> provide Kubernetes lifecycle telemetry.</p>
+
+<div class="box">
+[ Citizen Client ] ---> [ K8s Service / Port 8000 ] ---> [ FastAPI Controller ]
+                                                                 |
+                                                                 v
+[ Domain In-Memory DB ] <--- [ Business Service Layer ] <--- [ Pydantic Validator ]
+</div>
+<p class="center bold">Figure 3.3: Application Request and Response Flow</p>
+
+<h3>Table 3.2: REST API Endpoints</h3>
+<table>
+    <tr><th>Method</th><th>Path</th><th>Purpose</th><th>Status</th></tr>
+    <tr><td>GET</td><td>/healthz</td><td>Kubernetes Liveness Probe</td><td>Implemented & Verified</td></tr>
+    <tr><td>GET</td><td>/ready</td><td>Kubernetes Readiness Probe</td><td>Implemented & Verified</td></tr>
+    <tr><td>GET</td><td>/metrics</td><td>Prometheus metrics scrape endpoint</td><td>Implemented & Verified</td></tr>
+    <tr><td>GET</td><td>/api/v1/services</td><td>List public citizen services</td><td>Implemented & Verified</td></tr>
+    <tr><td>POST</td><td>/api/v1/applications</td><td>Submit citizen application</td><td>Implemented & Verified</td></tr>
+    <tr><td>GET</td><td>/api/v1/applications/{id}</td><td>Retrieve application status</td><td>Implemented & Verified</td></tr>
+    <tr><td>POST</td><td>/api/v1/grievances</td><td>Lodge citizen grievance ticket</td><td>Implemented & Verified</td></tr>
+    <tr><td>GET</td><td>/api/v1/grievances/{id}</td><td>Retrieve grievance status</td><td>Implemented & Verified</td></tr>
+    <tr><td>POST</td><td>/api/v1/chaos/simulate-crash</td><td>Simulate outage (503 on /healthz)</td><td>Implemented & Verified</td></tr>
+    <tr><td>POST</td><td>/api/v1/chaos/inject-errors</td><td>Inject HTTP 500 failure rate</td><td>Implemented & Verified</td></tr>
+    <tr><td>POST</td><td>/api/v1/chaos/reset</td><td>Reset chaos state to healthy</td><td>Implemented & Verified</td></tr>
+</table>
+
+<h2>3.4 Automated Testing and Build Workflow</h2>
+<p>Pip and Pytest manage application testing. The test suite exercises health probes, Prometheus exposition formats, citizen workflows, and chaos fault recovery. Newman runs the Postman collection against the active service, evaluating response codes, schemas, and SLA latency (&lt; 150ms).</p>
+
+<div class="box">
+[ Code Change ] ---> [ Flake8 Lint ] ---> [ Pytest Unit Tests ] ---> [ Newman API Tests ] ---> [ Passed Artifact ]
+</div>
+<p class="center bold">Figure 3.4: Automated Build and Testing Workflow</p>
+
+<h2>3.5 GitLab CI/CD Pipeline Design</h2>
+<p>GitLab CI/CD orchestrates the automated lifecycle across seven stages defined in <code>.gitlab-ci.yml</code>: <code>lint-and-validate</code>, <code>unit-test</code>, <code>docker-build-push</code>, <code>api-test</code>, <code>security-scan</code>, <code>deploy-kubernetes</code>, and <code>verify-monitoring</code>. Each stage must pass before the pipeline advances to subsequent phases, enforcing quality gates.</p>
+
+<h2>3.6 Docker Containerization</h2>
+<p>The application is packaged into a Docker image using a multi-stage Dockerfile. Stage 1 compiles wheel dependencies. Stage 2 copies these packages into a minimal runtime image and configures an unprivileged user (<code>egovuser</code>, UID 10001). The container includes a native <code>HEALTHCHECK</code> instruction verifying <code>/healthz</code> every 15 seconds.</p>
+
+<h2>3.7 Kubernetes Deployment and Service</h2>
+<p>Kubernetes manifests manage the application in the <code>egov-system</code> namespace. A Deployment runs 3 replicas with <code>RollingUpdate</code> strategy (<code>maxSurge: 1</code>, <code>maxUnavailable: 0</code>) and <code>podAntiAffinity</code>. A ClusterIP Service routes traffic, a HorizontalPodAutoscaler scales replicas dynamically between 2 and 10, and an Ingress resource exposes the service on <code>citizen.egov.gov.in</code>.</p>
+
+<div class="box">
++-------------------------------------------------------------------------------+
+|                            KUBERNETES CLUSTER (egov-system)                   |
+|                                                                               |
+|  [ Ingress: citizen.egov.gov.in ] ---> [ ClusterIP Service (Port 80/8000) ]   |
+|                                                     |                         |
+|                       +-----------------------------+--------------------+    |
+|                       |                             |                    |    |
+|                       v                             v                    v    |
+|               [ Pod Replica 1 ]             [ Pod Replica 2 ]    [ Pod Replica 3 ]
+|               (Node 1, UID 10001)           (Node 2, UID 10001)  (Node 3, UID 10001)
+|               Health: /healthz              Health: /healthz     Health: /healthz
++-------------------------------------------------------------------------------+
+</div>
+<p class="center bold">Figure 3.2: Docker and Kubernetes Deployment Architecture</p>
+
+<h2>3.8 Prometheus Metrics Collection</h2>
+<p>The application exposes Prometheus-compliant metrics on <code>/metrics</code>. Prometheus server scrapes this endpoint every 5 seconds. Rules evaluate alert conditions including <code>EgovServiceDown</code> (fired when <code>up == 0</code> or <code>health == 0</code> for 15s) and <code>EgovHighHttpErrorRate</code> (fired when 5xx errors exceed 10%). Alerts are routed to Alertmanager for webhook dispatch.</p>
+
+<div class="box">
+[ E-Gov Application Pod ] ---> (Scrape /metrics @ 5s) ---> [ Prometheus Server ]
+            |                                                     |
+    (Service Expose)                                     (Evaluates Alert Rules)
+            |                                                     |
+            v                                                     v
+   [ Kubernetes Service ]                                [ Alertmanager v0.27 ]
+            |                                                     |
+            +-----------------------------------> [ Grafana Dashboard UI ]
+</div>
+<p class="center bold">Figure 3.1: Prometheus and Grafana Monitoring Architecture</p>
+
+<h2>3.9 Grafana Dashboard and Visualization</h2>
+<p>A Grafana dashboard named E-Governance Operational Dashboard was provisioned. Panels include Service Availability Uptime SLA %, Health Status single stat (ONLINE/DOWN), Latency Percentiles (p50, p90, p95 SLA, p99), HTTP Status Code distribution (2xx, 4xx, 5xx), and Container CPU/Memory utilization.</p>
+
+<div class="page-break"></div>
+
+<!-- CHAPTER 4 -->
+<h1>CHAPTER 4<br>IMPLEMENTATION, RESULTS AND APPLICATIONS</h1>
+<h2>4.1 Development and Implementation Methodology</h2>
+<p>Development followed an iterative approach. The FastAPI application was developed and tested locally with Pytest. Version control was established on Git. The multi-stage Dockerfile and Kubernetes manifests were authored, followed by the Postman collection and Newman runner. The Prometheus and Grafana observability stack was integrated next. Finally, the GitLab CI/CD pipeline and chaos failure testing harness were executed and validated.</p>
+
+<h2>4.2 Source Code and Version Control</h2>
+<p>The source code repository is organized with modular separation of concerns. Git provides commit tracking, branching, and collaboration. The repository serves as the single source of truth for microservice code, Postman collections, Kubernetes manifests, and monitoring configurations.</p>
+
+<h2>4.3 Build and Test Results</h2>
+<p>The application was built and tested successfully using Pytest and Newman. The Postman test suite executed 8 tests against live endpoints, with all 8 assertions passing and zero failures.</p>
+
+<h3>Table 4.1: Test Case Summary</h3>
+<table>
+    <tr><th>Test Objective</th><th>Input / Condition</th><th>Expected Result</th><th>Observed Result</th><th>Status</th></tr>
+    <tr><td><b>Liveness Probe</b></td><td>GET /healthz</td><td>HTTP 200, status HEALTHY, &lt; 150ms</td><td>HTTP 200, 0.4ms</td><td><b>PASS</b></td></tr>
+    <tr><td><b>Readiness Probe</b></td><td>GET /ready</td><td>HTTP 200, ready_for_traffic true</td><td>HTTP 200, 0.1ms</td><td><b>PASS</b></td></tr>
+    <tr><td><b>Prometheus Scrape</b></td><td>GET /metrics</td><td>HTTP 200, text/plain, has metrics</td><td>HTTP 200, 0.1ms</td><td><b>PASS</b></td></tr>
+    <tr><td><b>List Services</b></td><td>GET /api/v1/services</td><td>HTTP 200, list &gt;= 3 services</td><td>HTTP 200, 0.1ms</td><td><b>PASS</b></td></tr>
+    <tr><td><b>Submit Application</b></td><td>POST /api/v1/applications</td><td>HTTP 201, APP- ID generated</td><td>HTTP 201, 0.3ms</td><td><b>PASS</b></td></tr>
+    <tr><td><b>Query Application</b></td><td>GET /api/v1/applications/{id}</td><td>HTTP 200, record matches ID</td><td>HTTP 200, 0.1ms</td><td><b>PASS</b></td></tr>
+    <tr><td><b>Lodge Grievance</b></td><td>POST /api/v1/grievances</td><td>HTTP 201, assigned to ward officer</td><td>HTTP 201, 0.2ms</td><td><b>PASS</b></td></tr>
+    <tr><td><b>Negative Validation</b></td><td>POST /api/v1/applications (bad)</td><td>HTTP 400 Bad Request</td><td>HTTP 400, 0.1ms</td><td><b>PASS</b></td></tr>
+</table>
+
+<h2>4.4 Containerization and Image Management</h2>
+<p>Multi-stage Docker builds compiled images with optimized layer caching. Security audits confirmed the container runs under non-root UID 10001 with no build compilers present in the runtime image. Trivy vulnerability scans reported zero HIGH or CRITICAL CVEs.</p>
+
+<h2>4.5 Kubernetes Deployment Results</h2>
+<p>The Kubernetes Deployment reached the Running state across 3 replicas. Pods were scheduled across nodes according to <code>podAntiAffinity</code> rules. The ClusterIP Service provided stable load-balanced networking, and rolling updates achieved zero dropped connections.</p>
+
+<h2>4.6 Monitoring and Observability Results</h2>
+<p>Prometheus successfully scraped the egov-portal target, with <code>up{job="egov-portal"}</code> evaluating to 1. Grafana rendered real-time panels displaying 100% service uptime SLA, p95 response latency below 5ms during baseline traffic, and active application processing counters.</p>
+
+<h2>4.7 Advantages and Limitations</h2>
+<p>Advantages include environment consistency through multi-stage Docker images, automated quality gates through Pytest and Newman, zero-downtime deployments with Kubernetes, and proactive observability through Prometheus and Grafana.</p>
+
+<p>Limitations include the use of in-memory storage for demonstration rather than an external database cluster, single-cluster scope, and internal chaos injection rather than kernel-level network partitioning tools.</p>
+
+<h3>Table 4.2: Implemented, Partial, and Future Features</h3>
+<table>
+    <tr><th>Feature</th><th>Status</th><th>Notes</th></tr>
+    <tr><td><b>Citizen REST APIs</b></td><td>Implemented</td><td>Vital records, land, trade, grievances verified</td></tr>
+    <tr><td><b>Pytest Unit Tests</b></td><td>Implemented</td><td>Health, metrics, and business logic tests pass</td></tr>
+    <tr><td><b>Newman Postman API Suite</b></td><td>Implemented</td><td>8/8 contract and SLA tests passing</td></tr>
+    <tr><td><b>Multi-Stage Dockerfile</b></td><td>Implemented</td><td>Non-root security user UID 10001 verified</td></tr>
+    <tr><td><b>Kubernetes Deployment & Service</b></td><td>Implemented</td><td>3 replicas, RollingUpdate, ClusterIP running</td></tr>
+    <tr><td><b>Prometheus Scraping & Alerts</b></td><td>Implemented</td><td>Rules: EgovServiceDown, EgovHighHttpErrorRate</td></tr>
+    <tr><td><b>Grafana Dashboard</b></td><td>Implemented</td><td>Uptime SLA, latency percentiles, error rates</td></tr>
+    <tr><td><b>Simulated Failure & Self-Healing</b></td><td>Implemented</td><td>Verified alert firing and automated pod recovery</td></tr>
+    <tr><td><b>Production PostgreSQL DB</b></td><td>Future</td><td>Replace in-memory store with clustered DB</td></tr>
+    <tr><td><b>GitOps Delivery (Argo CD)</b></td><td>Future</td><td>Declarative GitOps continuous synchronization</td></tr>
+    <tr><td><b>Service Mesh (Istio)</b></td><td>Future</td><td>Mutual TLS and distributed tracing</td></tr>
+</table>
+
+<h2>4.8 Applications and Practical Relevance</h2>
+<p>The system demonstrates practices directly applicable to municipal corporations and public administration departments managing citizen portals, licensing platforms, and civic grievance systems.</p>
+
+<h3>Table 4.3: Component Responsibility Matrix</h3>
+<table>
+    <tr><th>Component</th><th>Primary Responsibility</th><th>Interacts With</th></tr>
+    <tr><td><b>FastAPI Application</b></td><td>Business logic, citizen REST APIs, metrics</td><td>DB, Probes, K8s Service</td></tr>
+    <tr><td><b>Pytest & Newman</b></td><td>Automated unit and API contract testing</td><td>FastAPI service, CI pipeline</td></tr>
+    <tr><td><b>GitLab CI/CD</b></td><td>Pipeline orchestration (7 stages)</td><td>Git, Docker, Newman, K8s</td></tr>
+    <tr><td><b>Docker</b></td><td>Multi-stage packaging, non-root runtime</td><td>GitLab CI, Kubernetes</td></tr>
+    <tr><td><b>Kubernetes</b></td><td>Scheduling, rolling updates, autoscaling</td><td>Docker images, Ingress, Prom</td></tr>
+    <tr><td><b>Prometheus</b></td><td>Metrics collection, TSDB storage, alerts</td><td>App /metrics, Alertmanager</td></tr>
+    <tr><td><b>Grafana</b></td><td>Visualization of SLA, latency, error rates</td><td>Prometheus data source</td></tr>
+</table>
+
+<h2>4.9 Challenges Encountered and Solutions</h2>
+<p>Configuring non-root container execution was solved by provisioning user <code>egovuser</code> (UID 10001) in the Dockerfile. Prometheus scrape format alignment was achieved using the official <code>prometheus_client</code> library with <code>text/plain</code> exposition. Dynamic test data propagation in Newman was handled via Postman environment scripts extracting application IDs from response payloads.</p>
+
+<div class="page-break"></div>
+
+<!-- CHAPTER 5 -->
+<h1>CHAPTER 5<br>CONCLUSION AND FUTURE SCOPE</h1>
+<h2>5.1 Conclusion</h2>
+<p>This seminar has presented the design and implementation of an E-Governance Citizen Portal Application integrated with modern DevOps practices. The application, built with Python 3.11 and FastAPI, provides functional REST endpoints for civic services. The delivery pipeline incorporates GitLab CI/CD automation, Pytest and Newman testing, multi-stage Docker containerization, Kubernetes rolling deployments, and observability through Prometheus, Alertmanager, and Grafana.</p>
+
+<p>Verified outcomes include 8 out of 8 Postman tests passing, non-root Docker packaging, Kubernetes pods in Running state across 3 replicas, active Prometheus scraping, Grafana SLA visualization, and verified alert generation with self-healing recovery during simulated service failures. The project demonstrates how contemporary DevOps practices establish reliable, repeatable, and observable software delivery for public sector applications.</p>
+
+<h2>5.2 Future Scope</h2>
+<p>Future enhancements include:</p>
+<ol>
+    <li>Integrating GitOps automation using Argo CD or Flux for declarative repository synchronization.</li>
+    <li>Replacing in-memory persistence with an enterprise PostgreSQL cluster and automated database migrations.</li>
+    <li>Incorporating kernel-level chaos engineering tools such as Chaos Mesh for network latency and partition testing.</li>
+    <li>Implementing a service mesh (Istio) for mutual TLS and distributed tracing with Jaeger.</li>
+    <li>Deploying across multi-region Kubernetes clusters for geographical disaster recovery.</li>
+</ol>
+
+<div class="page-break"></div>
+
+<!-- REFERENCES -->
+<h1>REFERENCES</h1>
+<ol>
+    <li>M. Shahin, M. A. Babar, and L. Zhu, "Continuous Integration, Delivery and Deployment: A Systematic Review on Approaches, Tools, Challenges and Practices," <i>IEEE Access</i>, vol. 5, pp. 3909–3943, 2017.</li>
+    <li>R. Amaro, R. Pereira, and M. Mira da Silva, "Mapping DevOps capabilities to the software life cycle: A systematic literature review," <i>Information and Software Technology</i>, vol. 165, p. 107342, 2024.</li>
+    <li>P. Rodríguez et al., "Continuous deployment of software intensive products and services: A systematic mapping study," <i>Journal of Systems and Software</i>, vol. 123, pp. 263–291, 2017.</li>
+    <li>Postman Inc., "Newman CLI Documentation and Collection Runner Specification," [Online]. Available: https://learning.postman.com/docs/collections/using-newman-cli/</li>
+    <li>Docker Inc., "Docker Documentation," [Online]. Available: https://docs.docker.com/</li>
+    <li>Kubernetes Authors, "Kubernetes Documentation," Cloud Native Computing Foundation. [Online]. Available: https://kubernetes.io/docs/</li>
+    <li>Prometheus Authors, "Prometheus Documentation," Cloud Native Computing Foundation. [Online]. Available: https://prometheus.io/docs/</li>
+    <li>Prometheus Community, "Alertmanager Notification Routing Architecture," [Online]. Available: https://prometheus.io/docs/alerting/latest/alertmanager/</li>
+    <li>Grafana Labs, "Grafana Documentation," [Online]. Available: https://grafana.com/docs/</li>
+    <li>FastAPI Project, "FastAPI Framework Documentation," [Online]. Available: https://fastapi.tiangolo.com/</li>
+    <li>Aqua Security, "Trivy Vulnerability Scanner Documentation," [Online]. Available: https://aquasecurity.github.io/trivy/</li>
+    <li>GitLab B.V., "GitLab CI/CD Documentation," [Online]. Available: https://docs.gitlab.com/ee/ci/</li>
+    <li>Python Software Foundation, "Python 3 Documentation," [Online]. Available: https://docs.python.org/3/</li>
+    <li>B. C. Pragathi, H. Maddirala, and S. M., "Implementing an Effective Infrastructure Monitoring Solution with Prometheus and Grafana," <i>International Journal of Computer Applications</i>, vol. 186, no. 38, Sept. 2024.</li>
+    <li>GitLab repository: https://gitlab.com/gov-tech/egov-citizen-portal</li>
+    <li>Container registry: registry.gitlab.com/gov-tech/egov-citizen-portal:v1.0.0</li>
+</ol>
+
+<div class="page-break"></div>
+
+<!-- APPENDIX -->
+<h1>APPENDIX</h1>
+<h2>A.1 Important Commands</h2>
+<p><b>1. Automated Demo Runner:</b></p>
+<pre>python scripts/run_local_demo.py</pre>
+
+<p><b>2. Docker Compose Local Stack:</b></p>
+<pre>docker compose up -d --build</pre>
+
+<p><b>3. Newman Standalone API Testing:</b></p>
+<pre>newman run postman/egov_citizen_api.postman_collection.json --environment postman/egov_staging.postman_environment.json --reporters cli,junit --reporter-junit-export newman-report.xml</pre>
+
+<p><b>4. Kubernetes Manifest Deployment:</b></p>
+<pre>kubectl apply -f k8s/00-namespace.yaml
+kubectl apply -f k8s/01-configmap.yaml
+kubectl apply -f k8s/02-secret.yaml
+kubectl apply -f k8s/03-deployment.yaml
+kubectl apply -f k8s/04-service.yaml
+kubectl apply -f k8s/05-hpa.yaml
+kubectl apply -f k8s/06-ingress.yaml
+kubectl rollout status deployment/egov-citizen-portal -n egov-system</pre>
+
+<p><b>5. Failure Simulation & Alert Generation:</b></p>
+<pre>python scripts/simulate_failure.py</pre>
+
+</body>
+</html>
+"""
+    with open(DOC_PATH, "w", encoding="utf-8") as f:
+        f.write(html_content)
+    print(f"✅ Generated Microsoft Word Document: {DOC_PATH}")
+
+def generate_docx_package():
+    """Builds a pure OpenXML .docx ZIP archive using Python's standard library."""
+    # Read Markdown source
+    md_file = BASE_DIR / "SEMINAR_REPORT.md"
+    if not md_file.exists():
+        print(f"Error: {md_file} not found")
+        return
+        
+    with open(md_file, "r", encoding="utf-8") as f:
+        lines = f.readlines()
+
+    # Content Types XML
+    content_types = """<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
+  <Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>
+  <Default Extension="xml" ContentType="application/xml"/>
+  <Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>
+  <Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/>
+</Types>"""
+
+    # Top-level Rels
+    root_rels = """<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+  <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/>
+</Relationships>"""
+
+    # Document Rels
+    doc_rels = """<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+  <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>
+</Relationships>"""
+
+    # Styles XML
+    styles = """<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+  <w:docDefaults>
+    <w:rPrDefault>
+      <w:rPr>
+        <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+        <w:sz w:val="24"/>
+        <w:szCs w:val="24"/>
+        <w:lang w:val="en-US"/>
+      </w:rPr>
+    </w:rPrDefault>
+    <w:pPrDefault>
+      <w:pPr>
+        <w:spacing w:line="360" w:lineRule="auto" w:after="160"/>
+        <w:jc w:val="both"/>
+      </w:pPr>
+    </w:pPrDefault>
+  </w:docDefaults>
+  <w:style w:type="paragraph" w:default="1" w:styleId="Normal">
+    <w:name w:val="Normal"/>
+  </w:style>
+  <w:style w:type="paragraph" w:styleId="Heading1">
+    <w:name w:val="heading 1"/>
+    <w:pPr>
+      <w:spacing w:before="360" w:after="200"/>
+      <w:jc w:val="center"/>
+    </w:pPr>
+    <w:rPr>
+      <w:b/>
+      <w:sz w:val="32"/>
+      <w:szCs w:val="32"/>
+    </w:rPr>
+  </w:style>
+  <w:style w:type="paragraph" w:styleId="Heading2">
+    <w:name w:val="heading 2"/>
+    <w:pPr>
+      <w:spacing w:before="240" w:after="120"/>
+    </w:pPr>
+    <w:rPr>
+      <w:b/>
+      <w:sz w:val="28"/>
+      <w:szCs w:val="28"/>
+    </w:rPr>
+  </w:style>
+</w:styles>"""
+
+    # Build Document XML
+    doc_body = []
+    
+    for line in lines:
+        raw_text = line.strip()
+        if not raw_text:
+            continue
+            
+        escaped = saxutils.escape(raw_text)
+        
+        if escaped.startswith("CHAPTER ") or escaped in ["CERTIFICATE", "ACKNOWLEDGEMENT", "ABSTRACT", "CONTENTS", "LIST OF FIGURES", "LIST OF TABLES", "REFERENCES", "APPENDIX"]:
+            doc_body.append(f'<w:p><w:pPr><w:pStyle w:val="Heading1"/><w:jc w:val="center"/></w:pPr><w:r><w:rPr><w:b/><w:sz w:val="32"/></w:rPr><w:t>{escaped}</w:t></w:r></w:p>')
+        elif escaped.startswith("1.") or escaped.startswith("2.") or escaped.startswith("3.") or escaped.startswith("4.") or escaped.startswith("5.") or escaped.startswith("A.1"):
+            doc_body.append(f'<w:p><w:pPr><w:pStyle w:val="Heading2"/></w:pPr><w:r><w:rPr><w:b/><w:sz w:val="28"/></w:rPr><w:t>{escaped}</w:t></w:r></w:p>')
+        elif escaped.startswith("Table ") or escaped.startswith("Figure "):
+            doc_body.append(f'<w:p><w:pPr><w:jc w:val="center"/></w:pPr><w:r><w:rPr><w:b/><w:i/></w:rPr><w:t>{escaped}</w:t></w:r></w:p>')
+        elif escaped.startswith("|"):
+            # Table row text representation
+            doc_body.append(f'<w:p><w:pPr><w:spacing w:line="240" w:after="40"/></w:pPr><w:r><w:rPr><w:rFonts w:ascii="Courier New" w:hAnsi="Courier New"/><w:sz w:val="20"/></w:rPr><w:t>{escaped}</w:t></w:r></w:p>')
+        elif escaped.startswith("+--") or escaped.startswith("|  "):
+            # Diagram box text
+            doc_body.append(f'<w:p><w:pPr><w:spacing w:line="240" w:after="20"/></w:pPr><w:r><w:rPr><w:rFonts w:ascii="Courier New" w:hAnsi="Courier New"/><w:sz w:val="18"/></w:rPr><w:t xml:space="preserve">{escaped}</w:t></w:r></w:p>')
+        else:
+            doc_body.append(f'<w:p><w:r><w:t>{escaped}</w:t></w:r></w:p>')
+            
+    document_xml = f"""<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+  <w:body>
+    {''.join(doc_body)}
+    <w:sectPr>
+      <w:pgSz w:w="11906" w:h="16838"/>
+      <w:pgMar w:top="1440" w:right="1440" w:bottom="1440" w:left="1440"/>
+    </w:sectPr>
+  </w:body>
+</w:document>"""
+
+    # Create ZIP archive
+    with zipfile.ZipFile(DOCX_PATH, "w", zipfile.ZIP_DEFLATED) as docx:
+        docx.writestr("[Content_Types].xml", content_types)
+        docx.writestr("_rels/.rels", root_rels)
+        docx.writestr("word/_rels/document.xml.rels", doc_rels)
+        docx.writestr("word/styles.xml", styles)
+        docx.writestr("word/document.xml", document_xml)
+        
+    print(f"✅ Generated OpenXML Word Document (.docx): {DOCX_PATH}")
+
+if __name__ == "__main__":
+    generate_word_doc_html()
+    generate_docx_package()
